@@ -11,10 +11,10 @@
                 
                 view.SetSuppressUpdate(true);
                 
-                view.SetDisplayListType(m_csDisplayList);
+                view.SetDisplayListType(DisplayListType.DisplayListSegment);
                 view.SetDisplayListMode(true);
 
-				view.SetOcclusionCullingMode(false, true, 50);
+		view.SetOcclusionCullingMode(false, true, 50);
                 var oldStaticModel = view.GetModel().GetStaticModel();
             	if (m_bStaticModel != oldStaticModel)
             	{
