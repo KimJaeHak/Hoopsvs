@@ -67,3 +67,25 @@ float array를 3 by 5 의 갯수에 맞게 만들어서 위의 함수를 호출 
 대략적 으로 아래와 같은 모양이 된다.</br>
 ![MeshImage](Image/meshArrayImg.png)
 
+## Color Interpolation 설정(Color Map Index)
+Mesh를 만든 다음, Mesh에 Vertex에 아래와 같이 Color index를 설정해 주면 Color Interpolation을 통한 효과를 얻을 수 있다.
+```cpp
+var posColor = new float[]
+{
+0.0f, 0.0f, 1.0f,
+0.0f, 1.0f, 0.0f,
+1.0f, 0.0f, 0.0f,
+};
+HCS.Set_Color_Map_By_Value("RGB", 3, posColor);
+HCS.Set_Rendering_Options("color interpolation=on, color index interpolation=(faces, edges), no lighting");
+
+HCS.Open_Vertex(i);
+{
+   HCS.Set_Color_By_FIndex("faces", colorIndex); //color index 0,1,2
+}
+HCS.Close_Vertex();
+```
+Color Index를 적절히 사용해서 적용 하면 아래와 같은 화면을 얻을 수 있다.
+![ColorInterpolation](Image/color_interpolation.png)
+
+
