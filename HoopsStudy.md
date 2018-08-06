@@ -69,23 +69,130 @@ float array를 3 by 5 의 갯수에 맞게 만들어서 위의 함수를 호출 
 
 ## Color Interpolation 설정(Color Map Index)
 Mesh를 만든 다음, Mesh에 Vertex에 아래와 같이 Color index를 설정해 주면 Color Interpolation을 통한 효과를 얻을 수 있다.
+아래의 샘플 소스를 보고 대략 적인 개념을 익힘.
 ```cpp
-var posColor = new float[]
-{
-0.0f, 0.0f, 1.0f,
-0.0f, 1.0f, 0.0f,
-1.0f, 0.0f, 0.0f,
-};
-HCS.Set_Color_Map_By_Value("RGB", 3, posColor);
-HCS.Set_Rendering_Options("color interpolation=on, color index interpolation=(faces, edges), no lighting");
+ var axisOffset = 0.45f;
+            var posColor = new float[]
+            {
+                0.0f, 0.0f, 1.0f,
+                0.0f, 1.0f, 0.0f,
+                1.0f, 0.0f, 0.0f,
+            };
+            var posMesh = new float[20*3];
+            for (var i = 0; i < 10; i++)
+            {
+                var lindex = i * 3;
+                posMesh[lindex + 0] = 0.6f;
+                posMesh[lindex + 1] = (float) i * 0.1f - axisOffset;
+                posMesh[lindex + 2] = 0.0f;
 
-HCS.Open_Vertex(i);
-{
-   HCS.Set_Color_By_FIndex("faces", colorIndex); //color index 0,1,2
-}
-HCS.Close_Vertex();
+                var rindex = (i + 10) * 3;
+                posMesh[rindex + 0]  = 0.7f;
+                posMesh[rindex + 1] = (float) i * 0.1f - axisOffset;// - 0.25f;
+                posMesh[rindex + 2]  = 0.0f;
+            }
+            
+            var pos = new[] {0.0f, 0.0f, 0.0f};
+            var tar = new[] {0.0f, 0.0f, 1.0f};
+            var up = new[] {0.0f, 1.0f, 0.0f};
+            var width = 1.0f;
+            var height = 1.0f;
+
+            // Set Color Map
+            HCS.Open_Segment_By_Key(_view.GetModelKey());
+            {
+                HCS.Open_Segment("color field");
+                {
+                    HCS.Set_Color_Map_By_Value("RGB", 3, posColor);
+                    HCS.Set_Rendering_Options("color interpolation=on, color index interpolation=(faces, edges), no lighting");
+                    HCS.Set_Visibility("everything=off, faces=on, edges=on, text=on, line=on");
+
+                    HCS.Open_Segment("legend bar");
+                    {
+                        HCS.Set_Handedness("left");
+                        HCS.Set_Camera(pos, tar, up, width, height, "orthographic");
+                        HCS.Set_Visibility("edges=(everything=off,perimeters =on,interior silhouettes = on),faces = on");
+                        HCS.Set_Visibility("light=off");
+                        HCS.Insert_Distant_Light(0, 0, -1);
+                        var meshkey = HCS.Insert_Mesh(2, 10, posMesh);
+                        
+                        HCS.Open_Geometry(meshkey);
+                        int colorIndex = 0;
+                        for (var i = 0; i < 10; i++)
+                        {
+                            if (0 <= i && i < 3)
+                            {
+                                colorIndex = 0;
+                            }
+                            else if (3 <= i && i < 6)
+                            {
+                                colorIndex = 1;
+                            }
+                            else
+                            {
+                                colorIndex = 2;
+                            }
+
+                            HCS.Open_Vertex(i);
+                            {
+                                HCS.Set_Color_By_FIndex("faces", colorIndex);
+                            }
+                            HCS.Close_Vertex();
+                            HCS.Open_Vertex((i + 10));
+                            {
+                                HCS.Set_Color_By_FIndex("faces", colorIndex);
+                            }
+                            HCS.Close_Vertex();
+                        }
+                        HCS.Close_Geometry();
+
+                        for (var i = 0; i < 6; i++)
+                        {
+                            //sprintf(sText, "%4.2E\n", radius *1.0f);
+                            var sText = $"{(i * 1.0f):E2}";
+                            HCS.Insert_Text(0.8f, i*0.1f - axisOffset, -0.1f, sText);
+                        }
+                    }
+                    HCS.Close_Segment();
+
+                    HCS.Open_Segment("shell");
+                    {
+                        var points = new float[]
+                        {
+                            -0.5f, -0.5f, -0.5f,
+                            -0.5f, 0.5f, -0.5f,
+                            0.5f, 0.5f, -0.5f,
+                            0.5f, -0.5f, -0.5f,
+                            -0.5f, -0.5f, 0.5f,
+                            -0.5f, 0.5f, 0.5f,
+                            0.5f, 0.5f, 0.5f,
+                            0.5f, -0.5f, 0.5f,
+                        };
+                        points = points.Select(point => point * 10F).ToArray();
+                        var face_list = new int[] 
+                        {
+                            4,0,1,2,3,
+                            4,1,5,6,2,
+                            4,5,4,7,6,
+                            4,4,0,3,7,
+                            4,3,2,6,7,
+                            4,0,4,5,1
+                        };
+                        var keyShell = HCS.Insert_Shell(points.Length/3, points, face_list.Length, face_list);
+
+                        var fValues = new float[]
+                        {
+                            0,0,0,0,2,2,2,2
+                        };
+                        HCS.MSet_Vertex_Colors_By_FIndex(keyShell, "faces", 0, fValues.Length, fValues);
+                    }
+                    HCS.Close_Segment();
+                }
+                HCS.Close_Segment();
+            }
+            HCS.Close_Segment();
 ```
-Color Index를 적절히 사용해서 적용 하면 아래와 같은 화면을 얻을 수 있다.
+Color Index를 적절히 사용해서 적용 하면 아래와 같은 화면을 얻을 수 있다.</br>
 ![ColorInterpolation](Image/color_interpolation.png)
 
 
