@@ -193,6 +193,6 @@ Mesh를 만든 다음, Mesh에 Vertex에 아래와 같이 Color index를 설정�
             HCS.Close_Segment();
 ```
 Color Index를 적절히 사용해서 적용 하면 아래와 같은 화면을 얻을 수 있다.</br>
-![ColorInterpolation](Image/color_interpolation.png)
+![ColorInterpolation](Image/colorInterpolation.png)
 
 
