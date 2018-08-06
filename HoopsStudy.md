@@ -56,3 +56,13 @@ Sample Code : 아래의 코드를 활용해서 Screen Range 설정을 할 수 �
 		}
 	HC_Close_Segment();
 ```
+
+## Mesh 그리는 방법
+> Insert_Mesh(int row, int column, float[] array)
+
+```cpp
+HC_Insert_Mesh(3, 5, point_array);
+```
+float array를 3 by 5 의 갯수에 맞게 만들어서 위의 함수를 호출 하면 3X5 의 Mesh가 만들어 지고 대략적 으로 아래와 같은 모양이 된다.
+![MeshImage](./Image/meshArrayImg.png)
+
